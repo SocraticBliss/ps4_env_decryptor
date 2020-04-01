@@ -2,6 +2,7 @@
 SocraticBliss (R)
 
 Special Thanks to IDC for finding the Buffers/IV/Flag and implementation suggestions
+
 Big Thanks to flatz for fixing the decryption :)
 
 ... Oh and I guess zecoxao as well
