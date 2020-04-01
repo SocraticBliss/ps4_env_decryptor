@@ -2,8 +2,9 @@
 SocraticBliss (R)
 
 Special Thanks to IDC for finding the Buffers/IV/Flag and implementation suggestions
+Big Thanks to flatz for fixing the decryption :)
 
-... Oh and I guess Zecoxao as well
+... Oh and I guess zecoxao as well
 
 This tool is for decrypting [.env files](https://www.psdevwiki.com/ps4/Envelope_file) that are found on the PS4 filesystem.
 
