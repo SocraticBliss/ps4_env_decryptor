@@ -91,9 +91,6 @@ def main(argc, argv):
         
         message = data[0x150:0x150 + size]
         
-        padding = 16 - (size % 16)
-        message += chr(padding) * padding
-        
         data = aes_decrypt_cbc_cts(key, iv, message)
         output.write(data)
     
