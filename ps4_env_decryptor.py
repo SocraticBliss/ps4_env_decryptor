@@ -12,6 +12,13 @@ Huge thanks to Flatz for the proper decryption technique
 
 from binascii import unhexlify as uhx, hexlify as hx
 from Crypto.Cipher import AES
+from itertools import cycle
+
+try:
+    # Python 2
+    from itertools import izip
+except:
+    pass
 
 import struct
 import sys
@@ -40,33 +47,37 @@ KEYS = {
 }
 
 # Big Thanks to Flatz
+def align_down(x, alignment):
+    return x & ~(alignment - 1)
+
+def xor_string(key, data):
+    # Python 2
+    try:
+        return ''.join(chr(ord(x) ^ ord(y)) for (x, y) in izip(data, cycle(key)))
+    # Python 3
+    except:
+        return bytes(x ^ y for x, y in zip(data, cycle(key)))
+
 def aes_decrypt_cbc_cts(key, iv, data):
-    result = ''
-    data_size = len(data)
+    result = b''
+    size = len(data)
     
-    if data_size == 0:
+    if size == 0:
         return result
     
-    context = AES.new(key, AES.MODE_ECB)
-    num_data_left = data_size
-    block_size = 16
-    offset = 0
+    crypto = AES.new(key, AES.MODE_CBC, iv)
+    size_aligned = align_down(size, crypto.block_size)
+    result = crypto.decrypt(data[:size_aligned])
+    size_left = size - size_aligned
     
-    while num_data_left >= block_size:
-        input = data[offset:offset + block_size]
-        output = context.decrypt(input)
-        output = ''.join(chr(ord(output[i]) ^ ord(iv[i])) for i in xrange(block_size))
-        num_data_left -= block_size
-        offset += block_size
-        result += output
-        iv = input
-    
-    if num_data_left > 0 and num_data_left < block_size:
-        input = data[offset - block_size:offset]
-        output = context.encrypt(input)
-        
-        for i in xrange(num_data_left):
-            result += chr(ord(data[offset + i]) ^ ord(output[i]))
+    if size_left > 0:
+        assert size_left < crypto.block_size
+        crypto = AES.new(key, AES.MODE_ECB)
+        if size_aligned > AES.block_size:
+            tmp = crypto.encrypt(data[size_aligned - AES.block_size:size_aligned])
+        else:
+            tmp = crypto.encrypt(iv)
+        result += xor_string(data[size_aligned:], tmp[:size_left])
     
     return result
 
